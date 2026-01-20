@@ -1,0 +1,219 @@
+import * as fs from 'fs';
+import * as readline from 'readline';
+import type {
+  JsonlEntry,
+  ClaudeMessage,
+  SessionSummary,
+  ParsedSession,
+  ParsedMessage,
+  ToolCall,
+  MessageContent,
+} from '../types.js';
+
+/**
+ * Parse a single JSONL file and extract session data
+ */
+export async function parseJsonlFile(filePath: string): Promise<ParsedSession | null> {
+  const entries: JsonlEntry[] = [];
+
+  const fileStream = fs.createReadStream(filePath);
+  const rl = readline.createInterface({
+    input: fileStream,
+    crlfDelay: Infinity,
+  });
+
+  for await (const line of rl) {
+    if (line.trim()) {
+      try {
+        const entry = JSON.parse(line) as JsonlEntry;
+        entries.push(entry);
+      } catch {
+        // Skip malformed lines
+        continue;
+      }
+    }
+  }
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return buildSession(filePath, entries);
+}
+
+/**
+ * Build a ParsedSession from JSONL entries
+ */
+function buildSession(filePath: string, entries: JsonlEntry[]): ParsedSession | null {
+  // Extract session ID from filename
+  const sessionId = extractSessionId(filePath);
+  if (!sessionId) return null;
+
+  // Find summary entries
+  const summaries = entries.filter((e): e is SessionSummary => e.type === 'summary');
+  const summary = summaries.length > 0 ? summaries[summaries.length - 1].summary : null;
+
+  // Find all messages
+  const messages = entries.filter(
+    (e): e is ClaudeMessage =>
+      e.type === 'user' || e.type === 'assistant' || e.type === 'system'
+  );
+
+  if (messages.length === 0) {
+    return null;
+  }
+
+  // Extract metadata from first message
+  const firstMessage = messages[0];
+  const projectPath = firstMessage.cwd || extractProjectPath(filePath);
+  const projectName = extractProjectName(projectPath);
+  const gitBranch = firstMessage.gitBranch || null;
+  const claudeVersion = firstMessage.version || null;
+
+  // Parse all messages
+  const parsedMessages: ParsedMessage[] = [];
+  let toolCallCount = 0;
+  let userMessageCount = 0;
+  let assistantMessageCount = 0;
+
+  for (const msg of messages) {
+    // Skip meta messages
+    if (msg.isMeta) continue;
+
+    const parsed = parseMessage(msg, sessionId);
+    if (parsed) {
+      parsedMessages.push(parsed);
+      toolCallCount += parsed.toolCalls.length;
+
+      if (msg.type === 'user') userMessageCount++;
+      if (msg.type === 'assistant') assistantMessageCount++;
+    }
+  }
+
+  if (parsedMessages.length === 0) {
+    return null;
+  }
+
+  // Get timestamps
+  const timestamps = parsedMessages.map((m) => m.timestamp.getTime());
+  const startedAt = new Date(Math.min(...timestamps));
+  const endedAt = new Date(Math.max(...timestamps));
+
+  return {
+    id: sessionId,
+    projectPath,
+    projectName,
+    summary,
+    startedAt,
+    endedAt,
+    messageCount: parsedMessages.length,
+    userMessageCount,
+    assistantMessageCount,
+    toolCallCount,
+    gitBranch,
+    claudeVersion,
+    messages: parsedMessages,
+  };
+}
+
+/**
+ * Parse a single message entry
+ */
+function parseMessage(msg: ClaudeMessage, sessionId: string): ParsedMessage | null {
+  // Skip messages without proper structure
+  if (!msg.message || !msg.message.content) {
+    return null;
+  }
+
+  const content = extractTextContent(msg.message.content);
+  const toolCalls = extractToolCalls(msg.message.content);
+
+  // Skip empty messages
+  if (!content && toolCalls.length === 0) {
+    return null;
+  }
+
+  return {
+    id: msg.uuid,
+    sessionId,
+    type: msg.type,
+    content,
+    toolCalls,
+    timestamp: new Date(msg.timestamp),
+    parentId: msg.parentUuid || null,
+  };
+}
+
+/**
+ * Extract text content from message content
+ */
+function extractTextContent(content: string | MessageContent[]): string {
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  const textParts: string[] = [];
+  for (const part of content) {
+    if (part.type === 'text' && part.text) {
+      textParts.push(part.text);
+    }
+  }
+
+  return textParts.join('\n');
+}
+
+/**
+ * Extract tool calls from message content
+ */
+function extractToolCalls(content: string | MessageContent[]): ToolCall[] {
+  if (typeof content === 'string') {
+    return [];
+  }
+
+  const toolCalls: ToolCall[] = [];
+  for (const part of content) {
+    if (part.type === 'tool_use' && part.name) {
+      toolCalls.push({
+        name: part.name,
+        input: part.input || {},
+      });
+    }
+  }
+
+  return toolCalls;
+}
+
+/**
+ * Extract session ID from file path
+ */
+function extractSessionId(filePath: string): string | null {
+  const filename = filePath.split('/').pop();
+  if (!filename) return null;
+
+  // Handle both UUID.jsonl and agent-*.jsonl formats
+  const match = filename.match(/^([a-f0-9-]+|agent-[a-f0-9]+)\.jsonl$/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Extract project path from file path
+ */
+function extractProjectPath(filePath: string): string {
+  // File path format: ~/.claude/projects/-Users-name-path-to-project/session.jsonl
+  const parts = filePath.split('/');
+  const projectDirIndex = parts.findIndex((p) => p === 'projects');
+  if (projectDirIndex >= 0 && projectDirIndex < parts.length - 1) {
+    const encodedPath = parts[projectDirIndex + 1];
+    // Convert -Users-name-path to /Users/name/path
+    return encodedPath.replace(/^-/, '/').replace(/-/g, '/');
+  }
+  return filePath;
+}
+
+/**
+ * Extract project name from project path
+ */
+function extractProjectName(projectPath: string): string {
+  const parts = projectPath.split('/').filter(Boolean);
+  return parts[parts.length - 1] || 'unknown';
+}
