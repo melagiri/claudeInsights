@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
     .map((p) => ({
       name: p.projectName.length > 15 ? p.projectName.slice(0, 15) + '...' : p.projectName,
       sessions: p.sessionCount,
-      insights: p.insightCounts.decision + p.insightCounts.learning + p.insightCounts.workitem,
+      insights: p.insightCounts.summary + p.insightCounts.decision + p.insightCounts.learning + p.insightCounts.technique,
     }));
 
   return (
@@ -136,9 +136,10 @@ export default function AnalyticsPage() {
                 <tr className="border-b">
                   <th className="py-3 text-left font-medium">Project</th>
                   <th className="py-3 text-right font-medium">Sessions</th>
+                  <th className="py-3 text-right font-medium">Summaries</th>
                   <th className="py-3 text-right font-medium">Decisions</th>
                   <th className="py-3 text-right font-medium">Learnings</th>
-                  <th className="py-3 text-right font-medium">Work Items</th>
+                  <th className="py-3 text-right font-medium">Techniques</th>
                   <th className="py-3 text-right font-medium">Total Time</th>
                 </tr>
               </thead>
@@ -147,9 +148,10 @@ export default function AnalyticsPage() {
                   <tr key={project.projectId} className="border-b">
                     <td className="py-3">{project.projectName}</td>
                     <td className="py-3 text-right">{project.sessionCount}</td>
+                    <td className="py-3 text-right">{project.insightCounts.summary}</td>
                     <td className="py-3 text-right">{project.insightCounts.decision}</td>
                     <td className="py-3 text-right">{project.insightCounts.learning}</td>
-                    <td className="py-3 text-right">{project.insightCounts.workitem}</td>
+                    <td className="py-3 text-right">{project.insightCounts.technique}</td>
                     <td className="py-3 text-right">{Math.round(project.totalDuration)} min</td>
                   </tr>
                 ))}

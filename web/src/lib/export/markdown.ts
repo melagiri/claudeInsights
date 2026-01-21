@@ -29,18 +29,25 @@ export function exportToMarkdown(
   content += formatHeading('Summary', 2, exportFormat);
   content += `- **Sessions:** ${sessions.length}\n`;
   content += `- **Insights:** ${insights.length}\n`;
+  content += `- **Summaries:** ${insights.filter((i) => i.type === 'summary').length}\n`;
   content += `- **Decisions:** ${insights.filter((i) => i.type === 'decision').length}\n`;
   content += `- **Learnings:** ${insights.filter((i) => i.type === 'learning').length}\n`;
-  content += `- **Work Items:** ${insights.filter((i) => i.type === 'workitem').length}\n\n`;
+  content += `- **Techniques:** ${insights.filter((i) => i.type === 'technique').length}\n\n`;
 
   // Insights
   content += formatHeading('Insights', 2, exportFormat);
 
   if (groupByType) {
     // Group by type
+    const summaries = insights.filter((i) => i.type === 'summary');
     const decisions = insights.filter((i) => i.type === 'decision');
     const learnings = insights.filter((i) => i.type === 'learning');
-    const workitems = insights.filter((i) => i.type === 'workitem');
+    const techniques = insights.filter((i) => i.type === 'technique');
+
+    if (summaries.length > 0) {
+      content += formatHeading('Summaries', 3, exportFormat);
+      content += formatInsightList(summaries, exportFormat, includeMetadata);
+    }
 
     if (decisions.length > 0) {
       content += formatHeading('Decisions', 3, exportFormat);
@@ -52,9 +59,9 @@ export function exportToMarkdown(
       content += formatInsightList(learnings, exportFormat, includeMetadata);
     }
 
-    if (workitems.length > 0) {
-      content += formatHeading('Work Items', 3, exportFormat);
-      content += formatInsightList(workitems, exportFormat, includeMetadata);
+    if (techniques.length > 0) {
+      content += formatHeading('Techniques', 3, exportFormat);
+      content += formatInsightList(techniques, exportFormat, includeMetadata);
     }
   } else {
     // Chronological
@@ -139,6 +146,16 @@ export function exportDailyDigest(
   }
   content += '\n';
 
+  // Session summaries
+  const summaries = insights.filter((i) => i.type === 'summary');
+  if (summaries.length > 0) {
+    content += formatHeading('Session Summaries', 2, exportFormat);
+    for (const summary of summaries) {
+      content += `- ${summary.title}\n`;
+    }
+    content += '\n';
+  }
+
   // Key decisions
   const decisions = insights.filter((i) => i.type === 'decision');
   if (decisions.length > 0) {
@@ -155,6 +172,16 @@ export function exportDailyDigest(
     content += formatHeading('Things Learned', 2, exportFormat);
     for (const learning of learnings) {
       content += `- ${learning.title}\n`;
+    }
+    content += '\n';
+  }
+
+  // Techniques
+  const techniques = insights.filter((i) => i.type === 'technique');
+  if (techniques.length > 0) {
+    content += formatHeading('Techniques Used', 2, exportFormat);
+    for (const technique of techniques) {
+      content += `- ${technique.title}\n`;
     }
     content += '\n';
   }
@@ -189,7 +216,7 @@ function formatInsightList(
   for (const insight of insights) {
     if (format === 'obsidian') {
       // Obsidian callout format
-      const calloutType = insight.type === 'decision' ? 'info' : insight.type === 'learning' ? 'tip' : 'note';
+      const calloutType = insight.type === 'summary' ? 'summary' : insight.type === 'decision' ? 'info' : insight.type === 'learning' ? 'tip' : 'note';
       content += `> [!${calloutType}] ${insight.title}\n`;
       content += `> ${insight.content.replace(/\n/g, '\n> ')}\n`;
       if (includeMetadata) {

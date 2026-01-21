@@ -5,25 +5,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface InsightTypeChartProps {
   data: {
+    summary: number;
     decision: number;
     learning: number;
-    workitem: number;
-    effort: number;
+    technique: number;
   };
 }
 
 const COLORS = {
+  summary: 'hsl(270, 76%, 60%)',
   decision: 'hsl(217, 91%, 60%)',
   learning: 'hsl(142, 76%, 36%)',
-  workitem: 'hsl(270, 76%, 60%)',
-  effort: 'hsl(25, 95%, 53%)',
+  technique: 'hsl(25, 95%, 53%)',
 };
 
 const LABELS = {
+  summary: 'Summaries',
   decision: 'Decisions',
   learning: 'Learnings',
-  workitem: 'Work Items',
-  effort: 'Effort',
+  technique: 'Techniques',
 };
 
 export function InsightTypeChart({ data }: InsightTypeChartProps) {

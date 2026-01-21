@@ -14,15 +14,16 @@ export default function InsightsPage() {
   const { insights, loading, error } = useInsights(filters, 200);
 
   // Group insights by type
+  const summaries = insights.filter((i) => i.type === 'summary');
   const decisions = insights.filter((i) => i.type === 'decision');
   const learnings = insights.filter((i) => i.type === 'learning');
-  const workitems = insights.filter((i) => i.type === 'workitem');
+  const techniques = insights.filter((i) => i.type === 'technique');
 
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Insights</h1>
-        <p className="text-muted-foreground">Decisions, learnings, and work extracted from your sessions</p>
+        <p className="text-muted-foreground">AI-generated summaries, decisions, learnings, and techniques from your sessions</p>
       </div>
 
       {/* Filters */}
@@ -51,13 +52,18 @@ export default function InsightsPage() {
       <Tabs defaultValue="all" className="w-full">
         <TabsList>
           <TabsTrigger value="all">All ({insights.length})</TabsTrigger>
+          <TabsTrigger value="summaries">Summaries ({summaries.length})</TabsTrigger>
           <TabsTrigger value="decisions">Decisions ({decisions.length})</TabsTrigger>
           <TabsTrigger value="learnings">Learnings ({learnings.length})</TabsTrigger>
-          <TabsTrigger value="workitems">Work Items ({workitems.length})</TabsTrigger>
+          <TabsTrigger value="techniques">Techniques ({techniques.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="mt-6">
           <InsightGrid insights={insights} loading={loading} error={error} />
+        </TabsContent>
+
+        <TabsContent value="summaries" className="mt-6">
+          <InsightGrid insights={summaries} loading={loading} error={error} />
         </TabsContent>
 
         <TabsContent value="decisions" className="mt-6">
@@ -68,8 +74,8 @@ export default function InsightsPage() {
           <InsightGrid insights={learnings} loading={loading} error={error} />
         </TabsContent>
 
-        <TabsContent value="workitems" className="mt-6">
-          <InsightGrid insights={workitems} loading={loading} error={error} />
+        <TabsContent value="techniques" className="mt-6">
+          <InsightGrid insights={techniques} loading={loading} error={error} />
         </TabsContent>
       </Tabs>
     </div>

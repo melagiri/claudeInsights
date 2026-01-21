@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InsightCard } from '@/components/insights/InsightCard';
-import { EnhanceButton } from '@/components/gemini/EnhanceButton';
+import { AnalyzeButton } from '@/components/analysis/AnalyzeButton';
 import { ArrowLeft, MessageSquare, Wrench, Clock, GitBranch, Calendar } from 'lucide-react';
 
 interface SessionDetailPageProps {
@@ -145,13 +145,13 @@ export default function SessionDetailPage({ params }: SessionDetailPageProps) {
         </CardContent>
       </Card>
 
-      {/* AI Enhancement */}
+      {/* AI Analysis */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">AI Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          <EnhanceButton session={session} />
+          <AnalyzeButton session={session} />
         </CardContent>
       </Card>
 

@@ -7,6 +7,9 @@ export interface Project {
   sessionCount: number;
   lastActivity: Date;
   createdAt: Date;
+  // Multi-device support fields
+  gitRemoteUrl: string | null;
+  projectIdSource: 'git-remote' | 'path-hash';
 }
 
 export interface Session {
@@ -28,33 +31,40 @@ export interface Session {
   gitBranch: string | null;
   claudeVersion: string | null;
   syncedAt: Date;
+  // Multi-device support fields
+  gitRemoteUrl: string | null;
+  deviceId: string | null;
+  deviceHostname: string | null;
+  devicePlatform: string | null;
 }
+
+export type InsightType = 'summary' | 'decision' | 'learning' | 'technique';
+export type InsightScope = 'session' | 'project' | 'overall';
 
 export interface Insight {
   id: string;
   sessionId: string;
   projectId: string;
   projectName: string;
-  type: 'decision' | 'learning' | 'workitem' | 'effort';
+  type: InsightType;
   title: string;
   content: string;
-  // New structured fields
   summary: string;
   bullets: string[];
   confidence: number;
-  source: 'pattern' | 'llm' | 'claude_insight';
+  source: 'llm';
   metadata: InsightMetadata;
   timestamp: Date;
   createdAt: Date;
+  scope: InsightScope;
+  analysisVersion: string;
 }
 
 export interface InsightMetadata {
   alternatives?: string[];
   reasoning?: string;
-  files?: string[];
-  workType?: 'feature' | 'bugfix' | 'refactor' | 'docs' | 'test';
-  tokens?: number;
-  duration?: number;
+  context?: string;
+  applicability?: string;
 }
 
 export interface Message {
@@ -83,7 +93,7 @@ export interface SessionFilters {
 export interface InsightFilters {
   projectId?: string;
   sessionId?: string;
-  type?: Insight['type'];
+  type?: InsightType;
   dateFrom?: Date;
   dateTo?: Date;
   search?: string;
@@ -103,9 +113,9 @@ export interface ProjectStats {
   sessionCount: number;
   totalDuration: number;
   insightCounts: {
+    summary: number;
     decision: number;
     learning: number;
-    workitem: number;
-    effort: number;
+    technique: number;
   };
 }

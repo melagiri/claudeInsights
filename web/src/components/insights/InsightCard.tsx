@@ -3,33 +3,33 @@
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, GitCommit, BookOpen, Activity, FileCode } from 'lucide-react';
-import type { Insight } from '@/lib/types';
+import { FileText, GitCommit, BookOpen, Wrench } from 'lucide-react';
+import type { Insight, InsightType } from '@/lib/types';
 
 interface InsightCardProps {
   insight: Insight;
   showProject?: boolean;
 }
 
-const typeIcons = {
+const typeIcons: Record<InsightType, typeof FileText> = {
+  summary: FileText,
   decision: GitCommit,
   learning: BookOpen,
-  workitem: FileCode,
-  effort: Activity,
+  technique: Wrench,
 };
 
-const typeColors = {
+const typeColors: Record<InsightType, string> = {
+  summary: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
   decision: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   learning: 'bg-green-500/10 text-green-500 border-green-500/20',
-  workitem: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  effort: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+  technique: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
 };
 
-const typeLabels = {
+const typeLabels: Record<InsightType, string> = {
+  summary: 'Summary',
   decision: 'Decision',
   learning: 'Learning',
-  workitem: 'Work',
-  effort: 'Effort',
+  technique: 'Technique',
 };
 
 export function InsightCard({ insight, showProject = false }: InsightCardProps) {
@@ -80,7 +80,7 @@ export function InsightCard({ insight, showProject = false }: InsightCardProps) 
           </span>
           {insight.source === 'llm' && (
             <Badge variant="secondary" className="text-xs">
-              AI Enhanced
+              AI Generated
             </Badge>
           )}
         </div>

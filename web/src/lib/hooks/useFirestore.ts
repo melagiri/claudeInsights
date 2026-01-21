@@ -15,7 +15,7 @@ import {
   QueryConstraint,
 } from 'firebase/firestore';
 import { getDb, isFirebaseInitialized } from '../firebase';
-import type { Project, Session, Insight, SessionFilters, InsightFilters } from '../types';
+import type { Project, Session, Insight, Message, SessionFilters, InsightFilters } from '../types';
 
 /**
  * Hook to fetch and subscribe to projects
@@ -212,6 +212,50 @@ export function useInsights(filters?: InsightFilters, limitCount = 100) {
 }
 
 /**
+ * Hook to fetch messages for a session
+ */
+export function useMessages(sessionId: string | null) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!sessionId || !isFirebaseInitialized()) {
+      setLoading(false);
+      return;
+    }
+
+    const db = getDb();
+    const q = query(
+      collection(db, 'messages'),
+      where('sessionId', '==', sessionId),
+      orderBy('timestamp', 'asc')
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: (doc.data().timestamp as Timestamp)?.toDate() || new Date(),
+        })) as Message[];
+        setMessages(data);
+        setLoading(false);
+      },
+      (err) => {
+        setError(err.message);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [sessionId]);
+
+  return { messages, loading, error };
+}
+
+/**
  * Hook to get analytics data
  */
 export function useAnalytics() {
@@ -226,10 +270,10 @@ export function useAnalytics() {
 
   // Compute insight type distribution
   const insightsByType = {
+    summary: insights.filter((i) => i.type === 'summary').length,
     decision: insights.filter((i) => i.type === 'decision').length,
     learning: insights.filter((i) => i.type === 'learning').length,
-    workitem: insights.filter((i) => i.type === 'workitem').length,
-    effort: insights.filter((i) => i.type === 'effort').length,
+    technique: insights.filter((i) => i.type === 'technique').length,
   };
 
   return {
@@ -271,7 +315,7 @@ function computeProjectStats(sessions: Session[], insights: Insight[]) {
     projectName: string;
     sessionCount: number;
     totalDuration: number;
-    insightCounts: { decision: number; learning: number; workitem: number; effort: number };
+    insightCounts: { summary: number; decision: number; learning: number; technique: number };
   }> = {};
 
   for (const session of sessions) {
@@ -280,7 +324,7 @@ function computeProjectStats(sessions: Session[], insights: Insight[]) {
         projectName: session.projectName,
         sessionCount: 0,
         totalDuration: 0,
-        insightCounts: { decision: 0, learning: 0, workitem: 0, effort: 0 },
+        insightCounts: { summary: 0, decision: 0, learning: 0, technique: 0 },
       };
     }
     stats[session.projectId].sessionCount++;
@@ -289,7 +333,7 @@ function computeProjectStats(sessions: Session[], insights: Insight[]) {
   }
 
   for (const insight of insights) {
-    if (stats[insight.projectId]) {
+    if (stats[insight.projectId] && stats[insight.projectId].insightCounts[insight.type] !== undefined) {
       stats[insight.projectId].insightCounts[insight.type]++;
     }
   }
