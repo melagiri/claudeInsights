@@ -276,6 +276,9 @@ export async function getRecentSessions(limit: number = 10): Promise<ParsedSessi
       insights: [],
       gitBranch: data.gitBranch,
       claudeVersion: data.claudeVersion,
+      generatedTitle: data.generatedTitle || null,
+      titleSource: data.titleSource || null,
+      sessionCharacter: data.sessionCharacter || null,
     };
   });
 }
