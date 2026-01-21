@@ -2,7 +2,41 @@
 
 Next.js web application for visualizing Claude Code session insights.
 
-## Getting Started
+## For Users
+
+Most users should use the hosted version at **claudeinsight.vercel.app** via the CLI:
+
+```bash
+claudeinsight init   # Configure credentials
+claudeinsight sync   # Sync sessions
+claudeinsight open   # Open dashboard
+```
+
+This README is for self-hosting or development.
+
+## Authentication
+
+The dashboard requires authentication (Google or GitHub sign-in). This:
+- Protects the dashboard from unauthorized access
+- Enables usage analytics for the project maintainers
+- **Does NOT access your Claude Code data** (that stays in your Firebase)
+
+## Getting Started (Development)
+
+### Prerequisites
+
+1. Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Set up OAuth providers:
+   - **Google**: [console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+   - **GitHub**: [github.com/settings/developers](https://github.com/settings/developers)
+
+3. Set up Vercel Postgres (or local PostgreSQL)
+
+### Run Development Server
 
 ```bash
 pnpm install
@@ -11,191 +45,120 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### First-Time Setup
-
-1. Open the Settings page
-2. Enter your Firebase configuration:
-   - API Key
-   - Auth Domain
-   - Project ID
-   - Storage Bucket
-   - Messaging Sender ID
-   - App ID
-
-Configuration is stored in browser localStorage.
-
-### LLM Analysis Setup (Optional)
-
-To enable AI-powered insight generation:
-
-1. Go to Settings → LLM Provider
-2. Select a provider (OpenAI, Anthropic, Gemini, or Ollama)
-3. Enter your API key
-4. Choose a model
-
 ## Pages
 
-### Dashboard (`/`)
-Overview of recent activity:
-- Session count and trends
-- Recent sessions list
-- Quick stats
-
-### Sessions (`/sessions`)
-Browse all synced sessions:
-- Filter by project
-- Search by content
-- View session details
-
-### Session Detail (`/sessions/[id]`)
-Deep dive into a single session:
-- Full message timeline
-- Tool call breakdown
-- **Analyze Button** - Generate insights using LLM
-- Related insights
-
-### Insights (`/insights`)
-Browse all generated insights:
-- Filter by type (Summary, Decision, Learning, Technique)
-- Filter by project
-- Card-based view with expandable details
-
-### Analytics (`/analytics`)
-Visualize usage patterns:
-- Activity over time chart
-- Insight type distribution (pie chart)
-- Top projects by sessions
-- Project breakdown table
-
-### Export (`/export`)
-Export data to Markdown:
-- Plain Markdown
-- Obsidian format (with callouts and wikilinks)
-- Notion format (with toggle blocks)
-
-### Daily Digest (`/digest`)
-Daily summary view:
-- What you worked on
-- Decisions made
-- Things learned
-
-### Settings (`/settings`)
-Configure the dashboard:
-- Firebase connection
-- LLM provider and API key
-- Model selection
+| Page | Description |
+|------|-------------|
+| `/login` | Authentication (Google/GitHub) |
+| `/` | Dashboard overview |
+| `/sessions` | Browse sessions |
+| `/sessions/[id]` | Session detail with Analyze button |
+| `/insights` | Browse insights by type |
+| `/analytics` | Usage charts and trends |
+| `/export` | Export to Markdown |
+| `/digest` | Daily summary |
+| `/settings` | Firebase + LLM configuration |
 
 ## LLM-Powered Analysis
 
-The web dashboard can analyze sessions using your own LLM API key.
-
-### Supported Providers
+Analyze sessions using your own LLM API key:
 
 | Provider | Models |
 |----------|--------|
-| OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo |
-| Anthropic | claude-sonnet-4-20250514, claude-3-5-haiku-20241022 |
+| OpenAI | gpt-4o, gpt-4o-mini |
+| Anthropic | claude-sonnet-4-20250514, claude-3-5-haiku |
 | Google Gemini | gemini-1.5-pro, gemini-1.5-flash |
 | Ollama (local) | llama3.2, mistral, codellama |
-
-### How It Works
-
-1. Click **Analyze** on any session
-2. Messages are fetched from Firestore
-3. Long sessions are chunked (~80k tokens max per call)
-4. LLM extracts structured insights
-5. Insights are saved to Firestore
-6. UI updates in real-time
-
-### Insight Types Generated
-
-- **Summary**: What was accomplished in the session
-- **Decision**: Choices made with reasoning
-- **Learning**: Technical discoveries and gotchas
-- **Technique**: Problem-solving approaches used
 
 ## Project Structure
 
 ```
 web/
+├── prisma/
+│   └── schema.prisma       # User auth schema (Vercel Postgres)
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx              # Dashboard
-│   │   ├── sessions/
-│   │   │   ├── page.tsx          # Session list
-│   │   │   └── [id]/page.tsx     # Session detail
-│   │   ├── insights/page.tsx     # Insights browser
-│   │   ├── analytics/page.tsx    # Analytics charts
-│   │   ├── export/page.tsx       # Export page
-│   │   ├── digest/page.tsx       # Daily digest
-│   │   ├── settings/page.tsx     # Settings
-│   │   ├── api/                   # API routes
-│   │   ├── layout.tsx            # Root layout
-│   │   └── providers.tsx         # Firebase provider
+│   │   ├── api/auth/       # NextAuth API routes
+│   │   ├── login/          # Login page
+│   │   └── ...             # Dashboard pages
 │   ├── components/
-│   │   ├── ui/                   # shadcn/ui components
-│   │   ├── charts/               # Recharts components
-│   │   ├── insights/             # InsightCard, etc.
-│   │   ├── sessions/             # SessionCard, etc.
-│   │   └── analysis/             # AnalyzeButton
-│   └── lib/
-│       ├── firebase.ts           # Firebase client
-│       ├── types.ts              # TypeScript types
-│       ├── hooks/
-│       │   └── useFirestore.ts   # Real-time hooks
-│       ├── llm/
-│       │   ├── client.ts         # LLM provider factory
-│       │   ├── providers/        # OpenAI, Anthropic, etc.
-│       │   ├── prompts.ts        # Analysis prompts
-│       │   └── analysis.ts       # Analysis engine
-│       ├── firestore/
-│       │   └── insights.ts       # Insight write helpers
-│       └── export/
-│           └── markdown.ts       # Export formatters
-├── public/
-├── package.json
-├── next.config.ts
-├── tailwind.config.ts
-└── tsconfig.json
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── analysis/       # AnalyzeButton
+│   │   └── ...
+│   ├── lib/
+│   │   ├── auth.ts         # NextAuth configuration
+│   │   ├── prisma.ts       # Prisma client
+│   │   ├── firebase.ts     # Firebase client
+│   │   ├── llm/            # LLM providers
+│   │   └── ...
+│   └── middleware.ts       # Auth middleware
+├── .env.example
+└── package.json
 ```
 
-## Development
+## Environment Variables
 
 ```bash
-# Development server
-pnpm dev
+# NextAuth
+NEXTAUTH_SECRET=random-secret
+NEXTAUTH_URL=http://localhost:3000
 
-# Production build
-pnpm build
+# OAuth Providers
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GITHUB_ID=...
+GITHUB_SECRET=...
 
-# Start production server
-pnpm start
-
-# Lint
-pnpm lint
+# Vercel Postgres
+POSTGRES_PRISMA_URL=...
+POSTGRES_URL_NON_POOLING=...
 ```
+
+## Deployment to Vercel
+
+### 1. Push to GitHub
+
+```bash
+git push origin main
+```
+
+### 2. Import to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import your GitHub repository
+3. Set root directory to `web`
+
+### 3. Add Vercel Postgres
+
+1. Go to your project → Storage
+2. Create a new Postgres database
+3. Environment variables are auto-configured
+
+### 4. Configure OAuth
+
+Add these environment variables in Vercel:
+- `NEXTAUTH_SECRET` (generate with `openssl rand -base64 32`)
+- `NEXTAUTH_URL` (your Vercel URL)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- `GITHUB_ID`, `GITHUB_SECRET`
+
+### 5. Run Database Migration
+
+```bash
+npx prisma db push
+```
+
+### 6. Enable Analytics
+
+1. Go to your project → Analytics
+2. Enable Vercel Analytics (free tier)
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **React**: React 19
-- **Styling**: Tailwind CSS 4
-- **Components**: shadcn/ui
+- **Auth**: NextAuth.js v5 (Google, GitHub)
+- **Database**: Vercel Postgres + Prisma (users)
+- **User Data**: Firebase Firestore (user-provided)
+- **Styling**: Tailwind CSS 4, shadcn/ui
 - **Charts**: Recharts
-- **Database**: Firebase Firestore (client SDK)
-- **State**: React hooks with real-time Firestore subscriptions
-
-## Environment Variables
-
-No environment variables required - all configuration is done through the Settings page and stored in localStorage.
-
-## Deployment
-
-The dashboard can be deployed to any static hosting:
-
-```bash
-pnpm build
-# Deploy .next/standalone or use Vercel/Netlify
-```
-
-Note: Since Firebase config is entered by users in the browser, no server-side secrets are needed.
+- **Analytics**: Vercel Analytics

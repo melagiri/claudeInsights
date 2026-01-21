@@ -4,20 +4,15 @@ Transform your Claude Code session history into structured, searchable insights.
 
 ClaudeInsight parses Claude Code's JSONL session files (`~/.claude/projects/`) and syncs them to your own Firebase database, where you can visualize patterns, track decisions, and analyze your AI-assisted development workflow.
 
-## Privacy First: Bring Your Own Firebase (BYOF)
+## Privacy Model
 
-Your data stays yours. ClaudeInsight follows a **Bring Your Own Firebase** model:
-- No central server or data collection
-- You create your own Firebase project
-- All data lives in your Firestore database
-- Web dashboard runs locally or on your own hosting
+| What | Where | Who Can Access |
+|------|-------|----------------|
+| Your session data | Your Firebase | Only you |
+| Login credentials | Hosted dashboard | Authentication only |
+| Analytics | Vercel Analytics | Aggregate, anonymous |
 
-## Components
-
-| Component | Description |
-|-----------|-------------|
-| **[CLI](/cli)** | Parses JSONL sessions and syncs to Firestore |
-| **[Web Dashboard](/web)** | Next.js app for visualizing insights |
+**Your Claude Code data stays in YOUR Firebase** - the hosted dashboard just displays it.
 
 ## Quick Start
 
@@ -25,39 +20,31 @@ Your data stays yours. ClaudeInsight follows a **Bring Your Own Firebase** model
 
 1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
 2. Enable Firestore Database
-3. Generate a service account key (Project Settings → Service Accounts → Generate New Private Key)
+3. Get credentials:
+   - **Service Account**: Project Settings → Service Accounts → Generate New Private Key
+   - **Web Config**: Project Settings → General → Your Apps → Web App config
 
 ### 2. Install & Configure CLI
 
 ```bash
 cd cli
-pnpm install
-pnpm build
-npm link
+pnpm install && pnpm build && npm link
 
-# Configure with your Firebase credentials
+# One-time setup - collects both CLI and web credentials
 claudeinsight init
 ```
 
-### 3. Sync Your Sessions
+### 3. Sync & Open Dashboard
 
 ```bash
-# Sync all Claude Code sessions
+# Sync your Claude Code sessions
 claudeinsight sync
 
-# Check status
-claudeinsight status
+# Open the dashboard (auto-configured!)
+claudeinsight open
 ```
 
-### 4. Run the Web Dashboard
-
-```bash
-cd web
-pnpm install
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) and enter your Firebase config.
+That's it! The `open` command launches the hosted dashboard with your Firebase config pre-loaded.
 
 ## Architecture
 
@@ -67,37 +54,43 @@ Open [http://localhost:3000](http://localhost:3000) and enter your Firebase conf
            ▼
     ┌─────────────┐
     │   CLI       │  Parse JSONL, extract metadata
-    │  (Node.js)  │  Upload to Firestore
+    │  (Node.js)  │  Upload to YOUR Firestore
     └─────────────┘
            │
            ▼
     ┌─────────────┐
     │  Firestore  │  projects, sessions, messages, insights
-    │  (Firebase) │
+    │  (YOUR DB)  │  ← You own this data
     └─────────────┘
            │
            ▼
-    ┌─────────────┐
-    │    Web      │  Real-time dashboard
-    │  (Next.js)  │  LLM-powered analysis
-    └─────────────┘
+    ┌─────────────────────────────────────┐
+    │  Hosted Dashboard (Vercel)          │
+    │  ├── Auth (Google/GitHub login)     │
+    │  ├── Analytics (anonymous usage)    │
+    │  └── UI connects to YOUR Firestore  │
+    └─────────────────────────────────────┘
 ```
 
 ## Features
 
-### CLI
-- Incremental sync (only new/modified sessions)
-- Multi-device support with stable project IDs
-- Automatic title generation for sessions
-- Git branch and Claude version tracking
-- Hook integration for automatic sync
+### CLI Commands
+```bash
+claudeinsight init          # Configure Firebase credentials
+claudeinsight sync          # Sync sessions to Firestore
+claudeinsight sync --force  # Re-sync all sessions
+claudeinsight open          # Open dashboard in browser
+claudeinsight status        # Show sync statistics
+claudeinsight insights      # View recent insights
+claudeinsight reset         # Clear all Firestore data
+```
 
 ### Web Dashboard
-- Real-time session and project views
-- LLM-powered insight generation (bring your own API key)
-- Analytics and usage patterns
-- Export to Markdown (plain, Obsidian, Notion formats)
-- Daily digest view
+- **Authentication** - Sign in with Google or GitHub
+- **Real-time views** - Sessions, projects, insights
+- **LLM Analysis** - Generate insights with your own API key
+- **Analytics** - Usage patterns and trends
+- **Export** - Markdown (plain, Obsidian, Notion)
 
 ## Insight Types
 
@@ -110,17 +103,23 @@ Open [http://localhost:3000](http://localhost:3000) and enter your Firebase conf
 
 ## Multi-Device Support
 
-ClaudeInsight supports syncing from multiple machines:
-- Project IDs are derived from git remote URLs (stable across devices)
-- Each session tracks device metadata (hostname, platform)
-- Session counts are idempotent (re-syncing won't inflate counts)
+Sync from multiple machines to the same Firebase:
+- Project IDs derived from git remote URLs (stable across devices)
+- Each session tracks device metadata
+- Session counts are idempotent
 
 ## Tech Stack
 
 - **CLI**: Node.js, TypeScript, Commander.js, Firebase Admin SDK
-- **Web**: Next.js 16, React 19, Tailwind CSS 4, shadcn/ui, Recharts
-- **Database**: Firebase Firestore
-- **LLM Analysis**: OpenAI, Anthropic, Google Gemini, or Ollama (local)
+- **Web**: Next.js 16, React 19, Tailwind CSS, shadcn/ui
+- **Auth**: NextAuth.js (Google, GitHub)
+- **Database**: Vercel Postgres (users), Firebase Firestore (your data)
+- **Analytics**: Vercel Analytics
+- **LLM**: OpenAI, Anthropic, Gemini, Ollama
+
+## Self-Hosting
+
+Want to host your own dashboard? See [web/README.md](/web/README.md) for deployment instructions.
 
 ## License
 

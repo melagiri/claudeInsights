@@ -14,18 +14,41 @@ npm link
 
 ### `claudeinsight init`
 
-Configure ClaudeInsight with your Firebase credentials.
+Configure ClaudeInsight with your Firebase credentials (CLI + Web).
 
 ```bash
 claudeinsight init
 ```
 
 You'll be prompted for:
+
+**Step 1 - CLI Sync (Service Account):**
 - Firebase Project ID
-- Client Email (from service account)
-- Private Key (from service account JSON)
+- Service Account Email (client_email from JSON)
+- Private Key (private_key from JSON)
+
+**Step 2 - Web Dashboard (Client Config):**
+- API Key
+- Auth Domain
+- Storage Bucket
+- Messaging Sender ID
+- App ID
 
 Configuration is stored in `~/.claudeinsight/config.json`.
+
+### `claudeinsight open`
+
+Open the ClaudeInsight dashboard in your browser.
+
+```bash
+# Open dashboard with auto-configured Firebase
+claudeinsight open
+
+# Just print the URL (don't open browser)
+claudeinsight open --url
+```
+
+The dashboard URL includes your Firebase config encoded in the URL, so you don't need to configure it manually in the browser.
 
 ### `claudeinsight sync`
 
@@ -161,6 +184,7 @@ cli/
 │   ├── commands/
 │   │   ├── init.ts          # Firebase configuration
 │   │   ├── sync.ts          # Main sync logic
+│   │   ├── open.ts          # Open dashboard in browser
 │   │   ├── status.ts        # Status display
 │   │   ├── insights.ts      # View insights
 │   │   ├── reset.ts         # Clear all data
