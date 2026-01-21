@@ -58,7 +58,22 @@ export function InsightCard({ insight, showProject = false }: InsightCardProps) 
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground line-clamp-3">{insight.content}</p>
+        {insight.bullets && insight.bullets.length > 0 ? (
+  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+    {insight.bullets.slice(0, 3).map((bullet, i) => (
+      <li key={i} className="line-clamp-1">{bullet}</li>
+    ))}
+    {insight.bullets.length > 3 && (
+      <li className="text-muted-foreground/70">
+        +{insight.bullets.length - 3} more...
+      </li>
+    )}
+  </ul>
+) : (
+  <p className="text-sm text-muted-foreground line-clamp-3">
+    {insight.summary || insight.content}
+  </p>
+)}
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(insight.timestamp, { addSuffix: true })}
