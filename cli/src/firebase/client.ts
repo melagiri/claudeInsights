@@ -1,5 +1,6 @@
 import admin from 'firebase-admin';
-import type { ClaudeInsightConfig, ParsedSession, Insight, Project } from '../types.js';
+import type { ClaudeInsightConfig, ParsedSession, Insight, Project, InsightType } from '../types.js';
+import { generateStableProjectId, getDeviceInfo } from '../utils/device.js';
 
 let db: admin.firestore.Firestore | null = null;
 
@@ -38,32 +39,48 @@ function getDb(): admin.firestore.Firestore {
  */
 export async function uploadSession(session: ParsedSession): Promise<void> {
   const firestore = getDb();
+
+  // Generate stable project ID (prefers git remote URL)
+  const { projectId, source: projectIdSource, gitRemoteUrl } = generateStableProjectId(session.projectPath);
+
+  // Get device info for multi-device support
+  const deviceInfo = getDeviceInfo();
+
+  // Check if session already exists (for idempotent session count)
+  const sessionRef = firestore.collection('sessions').doc(session.id);
+  const existingSession = await sessionRef.get();
+  const isNewSession = !existingSession.exists;
+
   const batch = firestore.batch();
 
   // Upsert project
-  const projectRef = firestore.collection('projects').doc(generateProjectId(session.projectPath));
+  const projectRef = firestore.collection('projects').doc(projectId);
   batch.set(
     projectRef,
     {
       name: session.projectName,
       path: session.projectPath,
+      gitRemoteUrl: gitRemoteUrl,
+      projectIdSource: projectIdSource,
       lastActivity: admin.firestore.Timestamp.fromDate(session.endedAt),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },
     { merge: true }
   );
 
-  // Increment session count
-  batch.update(projectRef, {
-    sessionCount: admin.firestore.FieldValue.increment(1),
-  });
+  // Only increment session count for NEW sessions (idempotent)
+  if (isNewSession) {
+    batch.update(projectRef, {
+      sessionCount: admin.firestore.FieldValue.increment(1),
+    });
+  }
 
-  // Upload session
-  const sessionRef = firestore.collection('sessions').doc(session.id);
+  // Upload session with device info
   batch.set(sessionRef, {
-    projectId: generateProjectId(session.projectPath),
+    projectId: projectId,
     projectName: session.projectName,
     projectPath: session.projectPath,
+    gitRemoteUrl: gitRemoteUrl,
     summary: session.summary,
     generatedTitle: session.generatedTitle,
     titleSource: session.titleSource,
@@ -76,6 +93,10 @@ export async function uploadSession(session: ParsedSession): Promise<void> {
     toolCallCount: session.toolCallCount,
     gitBranch: session.gitBranch,
     claudeVersion: session.claudeVersion,
+    // Device info for multi-device tracking
+    deviceId: deviceInfo.deviceId,
+    deviceHostname: deviceInfo.hostname,
+    devicePlatform: deviceInfo.platform,
     syncedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
@@ -83,60 +104,10 @@ export async function uploadSession(session: ParsedSession): Promise<void> {
 }
 
 /**
- * Upload insights to Firestore
+ * Upload messages to Firestore for LLM analysis
  */
-export async function uploadInsights(insights: Insight[]): Promise<void> {
-  if (insights.length === 0) return;
-
-  const firestore = getDb();
-
-  // Batch writes (max 500 per batch)
-  const batches: admin.firestore.WriteBatch[] = [];
-  let currentBatch = firestore.batch();
-  let operationCount = 0;
-
-  for (const insight of insights) {
-    const insightRef = firestore.collection('insights').doc(insight.id);
-    currentBatch.set(insightRef, {
-      sessionId: insight.sessionId,
-      projectId: insight.projectId,
-      projectName: insight.projectName,
-      type: insight.type,
-      title: insight.title,
-      content: insight.content,
-      summary: insight.summary,
-      bullets: insight.bullets,
-      confidence: insight.confidence,
-      source: insight.source,
-      metadata: insight.metadata,
-      timestamp: admin.firestore.Timestamp.fromDate(insight.timestamp),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    operationCount++;
-    if (operationCount >= 500) {
-      batches.push(currentBatch);
-      currentBatch = firestore.batch();
-      operationCount = 0;
-    }
-  }
-
-  if (operationCount > 0) {
-    batches.push(currentBatch);
-  }
-
-  // Execute all batches
-  await Promise.all(batches.map((batch) => batch.commit()));
-}
-
-/**
- * Upload messages to Firestore (optional, for full replay)
- */
-export async function uploadMessages(
-  session: ParsedSession,
-  options: { includeMessages?: boolean } = {}
-): Promise<void> {
-  if (!options.includeMessages || session.messages.length === 0) return;
+export async function uploadMessages(session: ParsedSession): Promise<void> {
+  if (session.messages.length === 0) return;
 
   const firestore = getDb();
   const batches: admin.firestore.WriteBatch[] = [];
@@ -207,7 +178,7 @@ export async function getProjects(): Promise<Project[]> {
 export async function getRecentInsights(
   limit: number = 20,
   filters?: {
-    type?: 'decision' | 'learning' | 'workitem';
+    type?: InsightType;
     project?: string;
     todayOnly?: boolean;
   }
@@ -251,6 +222,9 @@ export async function getRecentInsights(
       source: data.source,
       metadata: data.metadata,
       timestamp: data.timestamp?.toDate() || new Date(),
+      createdAt: data.createdAt?.toDate(),
+      scope: data.scope || 'session',
+      analysisVersion: data.analysisVersion || '',
     };
   });
 }
@@ -290,18 +264,6 @@ export async function getRecentSessions(limit: number = 10): Promise<ParsedSessi
   });
 }
 
-/**
- * Generate a stable project ID from path
- */
-function generateProjectId(projectPath: string): string {
-  let hash = 0;
-  for (let i = 0; i < projectPath.length; i++) {
-    const char = projectPath.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return `proj_${Math.abs(hash).toString(16)}`;
-}
 
 /**
  * Truncate content to max length
