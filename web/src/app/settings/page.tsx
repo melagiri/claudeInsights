@@ -4,6 +4,16 @@ import { useState, useEffect } from 'react';
 import { useFirebaseContext } from '../providers';
 import { loadFirebaseConfig, saveFirebaseConfig, clearFirebaseConfig, type FirebaseConfig } from '@/lib/firebase';
 import { loadSchedulerSettings, saveSchedulerSettings } from '@/lib/scheduler/reports';
+import {
+  loadLLMConfig,
+  saveLLMConfig,
+  clearLLMConfig,
+  isLLMConfigured,
+  testLLMConfig,
+  PROVIDERS,
+  type LLMConfig,
+  type LLMProvider,
+} from '@/lib/llm';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,26 +21,42 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { CheckCircle, XCircle, Database, Key, Trash2, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, Database, Key, Trash2, Calendar, Cpu, Loader2 } from 'lucide-react';
 
 export default function SettingsPage() {
   const { isConfigured, showConfig } = useFirebaseContext();
   const [config, setConfig] = useState<FirebaseConfig | null>(null);
-  const [geminiKey, setGeminiKey] = useState('');
-  const [geminiSaved, setGeminiSaved] = useState(false);
   const [schedulerEnabled, setSchedulerEnabled] = useState(false);
   const [schedulerFrequency, setSchedulerFrequency] = useState<'daily' | 'weekly'>('weekly');
   const [schedulerDay, setSchedulerDay] = useState(0);
+
+  // LLM configuration state
+  const [llmProvider, setLlmProvider] = useState<LLMProvider>('openai');
+  const [llmModel, setLlmModel] = useState('');
+  const [llmApiKey, setLlmApiKey] = useState('');
+  const [llmBaseUrl, setLlmBaseUrl] = useState('');
+  const [llmConfigured, setLlmConfigured] = useState(false);
+  const [llmTesting, setLlmTesting] = useState(false);
+  const [llmTestError, setLlmTestError] = useState<string | null>(null);
 
   useEffect(() => {
     const savedConfig = loadFirebaseConfig();
     setConfig(savedConfig);
 
-    // Load Gemini key from localStorage
-    const savedGeminiKey = localStorage.getItem('claudeinsight_gemini_key');
-    if (savedGeminiKey) {
-      setGeminiKey(savedGeminiKey);
-      setGeminiSaved(true);
+    // Load LLM config
+    const savedLLMConfig = loadLLMConfig();
+    if (savedLLMConfig) {
+      setLlmProvider(savedLLMConfig.provider);
+      setLlmModel(savedLLMConfig.model);
+      setLlmApiKey(savedLLMConfig.apiKey);
+      setLlmBaseUrl(savedLLMConfig.baseUrl || '');
+      setLlmConfigured(true);
+    } else {
+      // Set default model for initial provider
+      const defaultProvider = PROVIDERS.find(p => p.id === 'openai');
+      if (defaultProvider?.models[0]) {
+        setLlmModel(defaultProvider.models[0].id);
+      }
     }
 
     // Load scheduler settings
@@ -68,15 +94,62 @@ export default function SettingsPage() {
     });
   };
 
-  const handleSaveGeminiKey = () => {
-    localStorage.setItem('claudeinsight_gemini_key', geminiKey);
-    setGeminiSaved(true);
+  const handleProviderChange = (provider: LLMProvider) => {
+    setLlmProvider(provider);
+    setLlmConfigured(false);
+    setLlmTestError(null);
+    // Set default model for new provider
+    const providerInfo = PROVIDERS.find(p => p.id === provider);
+    if (providerInfo?.models[0]) {
+      setLlmModel(providerInfo.models[0].id);
+    }
+    // Clear API key when switching providers
+    setLlmApiKey('');
   };
 
-  const handleClearGeminiKey = () => {
-    localStorage.removeItem('claudeinsight_gemini_key');
-    setGeminiKey('');
-    setGeminiSaved(false);
+  const handleSaveLLMConfig = async () => {
+    const providerInfo = PROVIDERS.find(p => p.id === llmProvider);
+    if (!providerInfo) return;
+
+    // Validate required fields
+    if (providerInfo.requiresApiKey && !llmApiKey) {
+      setLlmTestError('API key is required');
+      return;
+    }
+    if (!llmModel) {
+      setLlmTestError('Please select a model');
+      return;
+    }
+
+    setLlmTesting(true);
+    setLlmTestError(null);
+
+    const newConfig: LLMConfig = {
+      provider: llmProvider,
+      apiKey: llmApiKey,
+      model: llmModel,
+      baseUrl: llmBaseUrl || undefined,
+    };
+
+    // Test the configuration
+    const result = await testLLMConfig(newConfig);
+
+    if (result.success) {
+      saveLLMConfig(newConfig);
+      setLlmConfigured(true);
+      setLlmTestError(null);
+    } else {
+      setLlmTestError(result.error || 'Failed to connect');
+    }
+
+    setLlmTesting(false);
+  };
+
+  const handleClearLLMConfig = () => {
+    clearLLMConfig();
+    setLlmConfigured(false);
+    setLlmApiKey('');
+    setLlmTestError(null);
   };
 
   const handleClearFirebase = () => {
@@ -145,60 +218,143 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Gemini API Configuration */}
+      {/* LLM Provider Configuration */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Key className="h-5 w-5" />
-              <CardTitle className="text-base">Gemini API (Optional)</CardTitle>
+              <Cpu className="h-5 w-5" />
+              <CardTitle className="text-base">AI Analysis Provider</CardTitle>
             </div>
-            {geminiSaved && (
+            {llmConfigured ? (
               <Badge variant="outline" className="text-green-600 border-green-600">
                 <CheckCircle className="mr-1 h-3 w-3" />
-                Configured
+                Connected
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-amber-600 border-amber-600">
+                Not Configured
               </Badge>
             )}
           </div>
           <CardDescription>
-            Add your Gemini API key to enable AI-powered insight enhancement
+            Configure an LLM provider to analyze sessions and generate insights
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Provider Selection */}
           <div>
-            <label className="text-sm font-medium">API Key</label>
-            <Input
-              type="password"
-              value={geminiKey}
-              onChange={(e) => {
-                setGeminiKey(e.target.value);
-                setGeminiSaved(false);
-              }}
-              placeholder="AIza..."
-              className="mt-1"
-            />
+            <label className="text-sm font-medium">Provider</label>
+            <Select
+              value={llmProvider}
+              onValueChange={(v) => handleProviderChange(v as LLMProvider)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select provider" />
+              </SelectTrigger>
+              <SelectContent>
+                {PROVIDERS.map((provider) => (
+                  <SelectItem key={provider.id} value={provider.id}>
+                    {provider.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Model Selection */}
+          <div>
+            <label className="text-sm font-medium">Model</label>
+            <Select value={llmModel} onValueChange={setLlmModel}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select model" />
+              </SelectTrigger>
+              <SelectContent>
+                {PROVIDERS.find(p => p.id === llmProvider)?.models.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span>{model.name}</span>
+                      {model.description && (
+                        <span className="text-xs text-muted-foreground">
+                          {model.description}
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* API Key (if required) */}
+          {PROVIDERS.find(p => p.id === llmProvider)?.requiresApiKey && (
+            <div>
+              <label className="text-sm font-medium">API Key</label>
+              <Input
+                type="password"
+                value={llmApiKey}
+                onChange={(e) => {
+                  setLlmApiKey(e.target.value);
+                  setLlmConfigured(false);
+                }}
+                placeholder={llmProvider === 'openai' ? 'sk-...' : llmProvider === 'anthropic' ? 'sk-ant-...' : 'AIza...'}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Get your API key from{' '}
+                <a
+                  href={PROVIDERS.find(p => p.id === llmProvider)?.apiKeyLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  {PROVIDERS.find(p => p.id === llmProvider)?.name}
+                </a>
+              </p>
+            </div>
+          )}
+
+          {/* Base URL (for Ollama) */}
+          {llmProvider === 'ollama' && (
+            <div>
+              <label className="text-sm font-medium">Base URL (optional)</label>
+              <Input
+                value={llmBaseUrl}
+                onChange={(e) => setLlmBaseUrl(e.target.value)}
+                placeholder="http://localhost:11434"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Leave empty for default (localhost:11434)
+              </p>
+            </div>
+          )}
+
+          {/* Error message */}
+          {llmTestError && (
+            <p className="text-sm text-red-500">{llmTestError}</p>
+          )}
+
+          {/* Action buttons */}
           <div className="flex gap-2">
-            <Button onClick={handleSaveGeminiKey} disabled={!geminiKey}>
-              Save API Key
+            <Button onClick={handleSaveLLMConfig} disabled={llmTesting}>
+              {llmTesting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : llmConfigured ? (
+                'Update Configuration'
+              ) : (
+                'Save & Test'
+              )}
             </Button>
-            {geminiSaved && (
-              <Button variant="outline" onClick={handleClearGeminiKey}>
+            {llmConfigured && (
+              <Button variant="outline" onClick={handleClearLLMConfig}>
                 Clear
               </Button>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Get your API key from{' '}
-            <a
-              href="https://aistudio.google.com/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              Google AI Studio
-            </a>
-          </p>
         </CardContent>
       </Card>
 
