@@ -4,7 +4,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import {
   loadFirebaseConfig,
   initializeFirebase,
-  isFirebaseInitialized,
+  parseConfigFromUrl,
+  clearConfigFromUrl,
+  saveFirebaseConfig,
   type FirebaseConfig,
 } from '@/lib/firebase';
 import { ConfigDialog } from '@/components/ConfigDialog';
@@ -35,7 +37,21 @@ export function Providers({ children }: ProvidersProps) {
   useEffect(() => {
     setMounted(true);
 
-    // Try to load saved config
+    // Priority 1: Check for config in URL (from CLI `claudeinsight open`)
+    const urlConfig = parseConfigFromUrl();
+    if (urlConfig) {
+      try {
+        initializeFirebase(urlConfig);
+        saveFirebaseConfig(urlConfig); // Persist for future visits
+        clearConfigFromUrl(); // Clean up URL
+        setIsConfigured(true);
+        return;
+      } catch {
+        // URL config invalid, continue to check localStorage
+      }
+    }
+
+    // Priority 2: Try to load saved config from localStorage
     const config = loadFirebaseConfig();
     if (config) {
       try {

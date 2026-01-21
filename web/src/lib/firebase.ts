@@ -58,6 +58,53 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
 }
 
 /**
+ * Parse config from URL parameter (base64 encoded)
+ * URL format: ?config=base64encodedconfig
+ */
+export function parseConfigFromUrl(): FirebaseConfig | null {
+  if (typeof window === 'undefined') return null;
+
+  const params = new URLSearchParams(window.location.search);
+  const encodedConfig = params.get('config');
+
+  if (!encodedConfig) return null;
+
+  try {
+    // URL-safe base64 decode
+    const base64 = encodedConfig
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+    // Add padding if needed
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+
+    const decoded = atob(padded);
+    const config = JSON.parse(decoded) as FirebaseConfig;
+
+    // Validate required fields
+    if (config.apiKey && config.projectId && config.appId) {
+      return config;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Clear config parameter from URL without reload
+ */
+export function clearConfigFromUrl(): void {
+  if (typeof window === 'undefined') return;
+
+  const url = new URL(window.location.href);
+  url.searchParams.delete('config');
+
+  window.history.replaceState({}, '', url.toString());
+}
+
+/**
  * Save config to localStorage
  */
 export function saveFirebaseConfig(config: FirebaseConfig): void {
