@@ -240,6 +240,8 @@ export async function getRecentInsights(
       type: data.type,
       title: data.title,
       content: data.content,
+      summary: data.summary || '',
+      bullets: data.bullets || [],
       confidence: data.confidence,
       source: data.source,
       metadata: data.metadata,
