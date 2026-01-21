@@ -98,6 +98,13 @@ export interface GeneratedTitle {
   character: SessionCharacter | null;
 }
 
+export interface ParsedInsightContent {
+  title: string;
+  summary: string;
+  bullets: string[];
+  rawContent: string;
+}
+
 export interface ToolCall {
   name: string;
   input: Record<string, unknown>;
@@ -111,8 +118,10 @@ export interface Insight {
   type: 'decision' | 'learning' | 'workitem' | 'effort';
   title: string;
   content: string;
+  summary: string;
+  bullets: string[];
   confidence: number;
-  source: 'pattern' | 'llm';
+  source: 'pattern' | 'llm' | 'claude_insight';
   metadata: InsightMetadata;
   timestamp: Date;
 }

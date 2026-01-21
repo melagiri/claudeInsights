@@ -1,5 +1,30 @@
-import type { ParsedSession, ParsedMessage, Insight, InsightMetadata } from '../types.js';
+import type { ParsedSession, ParsedMessage, Insight, InsightMetadata, ParsedInsightContent } from '../types.js';
 import { v4 as uuidv4 } from 'uuid';
+
+export function parseInsightContent(raw: string): ParsedInsightContent {
+  const isClaudeInsight = raw.includes('★ Insight') || raw.includes('★Insight');
+  if (isClaudeInsight) {
+    return parseClaudeFormattedInsight(raw);
+  }
+  return parseGenericContent(raw);
+}
+
+function parseClaudeFormattedInsight(raw: string): ParsedInsightContent {
+  let cleaned = raw.replace(/★\s*Insight\s*─*/g, '').replace(/─+/g, '').replace(/\*\*/g, '').trim();
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(l => l);
+  const title = (lines[0] || '').replace(/:$/, '').trim();
+  const bullets = lines.slice(1).filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '').trim());
+  const summary = bullets.length > 0 ? `${title}: ${bullets[0]}` : title;
+  return { title, summary, bullets, rawContent: raw };
+}
+
+function parseGenericContent(raw: string): ParsedInsightContent {
+  let cleaned = raw.replace(/\*\*/g, '').replace(/\\"/g, '"').replace(/\\n/g, '\n').trim();
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(l => l);
+  const title = truncate(lines[0] || cleaned, 100);
+  const bullets = lines.slice(1).filter(l => l.startsWith('-') || l.startsWith('•')).map(l => l.replace(/^[-•]\s*/, '').trim());
+  return { title, summary: title, bullets, rawContent: raw };
+}
 
 // Pattern matching rules for different insight types
 const DECISION_PATTERNS = [
@@ -100,6 +125,8 @@ function extractDecisions(
         type: 'decision',
         title: truncate(extractedText, 100),
         content: context,
+        summary: '',
+        bullets: [],
         confidence: 0.7,
         source: 'pattern',
         metadata: {
@@ -146,6 +173,8 @@ function extractLearnings(
         type: 'learning',
         title: truncate(extractedText, 100),
         content: context,
+        summary: '',
+        bullets: [],
         confidence: 0.6,
         source: 'pattern',
         metadata: {},
@@ -203,6 +232,8 @@ function extractWorkItems(
     type: 'workitem',
     title: `${capitalizeFirst(workType)}: ${files.length} file(s) modified`,
     content: `Files: ${files.join(', ')}`,
+    summary: '',
+    bullets: [],
     confidence: 0.9,
     source: 'pattern',
     metadata: {
@@ -235,6 +266,8 @@ function createEffortInsight(session: ParsedSession, projectId: string): Insight
     type: 'effort',
     title: `Session: ${durationMinutes} min, ${session.messageCount} messages`,
     content: `User: ${session.userMessageCount} messages, Assistant: ${session.assistantMessageCount} messages, Tool calls: ${session.toolCallCount}`,
+    summary: '',
+    bullets: [],
     confidence: 1.0,
     source: 'pattern',
     metadata: {
