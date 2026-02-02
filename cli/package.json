@@ -1,7 +1,7 @@
 {
   "name": "@claudeinsight/cli",
-  "version": "0.1.0",
-  "description": "CLI tool for ClaudeInsight - sync Claude Code sessions to Firestore",
+  "version": "1.0.0",
+  "description": "Sync Claude Code sessions to your Firebase for analysis",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

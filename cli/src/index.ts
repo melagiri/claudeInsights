@@ -11,8 +11,8 @@ const program = new Command();
 
 program
   .name('claudeinsight')
-  .description('Sync Claude Code sessions to Firestore for insights')
-  .version('0.1.0');
+  .description('Sync Claude Code sessions to your Firebase for analysis')
+  .version('1.0.0');
 
 program
   .command('init')
