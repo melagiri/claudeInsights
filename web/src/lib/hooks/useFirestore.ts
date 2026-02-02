@@ -256,6 +256,27 @@ export function useMessages(sessionId: string | null) {
 }
 
 /**
+ * Fetch messages for a single session (non-reactive, for bulk operations)
+ */
+export async function fetchMessages(sessionId: string): Promise<Message[]> {
+  if (!isFirebaseInitialized()) return [];
+
+  const db = getDb();
+  const q = query(
+    collection(db, 'messages'),
+    where('sessionId', '==', sessionId),
+    orderBy('timestamp', 'asc')
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+    timestamp: (doc.data().timestamp as Timestamp)?.toDate() || new Date(),
+  })) as Message[];
+}
+
+/**
  * Hook to get analytics data
  */
 export function useAnalytics() {
