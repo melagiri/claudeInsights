@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import type { ClaudeInsightConfig, SyncState } from '../types.js';
+import type { ClaudeInsightConfig, SyncState, FirebaseWebConfig } from '../types.js';
 
 const CONFIG_DIR = path.join(os.homedir(), '.claudeinsight');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
@@ -102,7 +102,7 @@ export function loadWebConfig(): Record<string, unknown> | null {
 /**
  * Save web config to file
  */
-export function saveWebConfig(config: Record<string, unknown>): void {
+export function saveWebConfig(config: FirebaseWebConfig): void {
   ensureConfigDir();
   fs.writeFileSync(WEB_CONFIG_FILE, JSON.stringify(config, null, 2), { mode: 0o600 });
 }
