@@ -7,6 +7,8 @@ This guide walks you through setting up Firebase for ClaudeInsight.
 - A Google account
 - [Firebase Console](https://console.firebase.google.com) access
 
+> **Tip:** For visual guidance with screenshots, see [Firebase's official documentation](https://firebase.google.com/docs/web/setup).
+
 ## Step 1: Create a Firebase Project
 
 1. Go to [Firebase Console](https://console.firebase.google.com)
@@ -21,7 +23,7 @@ This guide walks you through setting up Firebase for ClaudeInsight.
 2. Click **"Firestore Database"**
 3. Click **"Create database"**
 4. Choose **"Start in production mode"**
-5. Select a location closest to you
+5. Select a location closest to you (this cannot be changed later)
 6. Click **"Enable"**
 
 ## Step 3: Download Service Account Key
@@ -40,9 +42,28 @@ This guide walks you through setting up Firebase for ClaudeInsight.
 3. Click the **Web icon** (`</>`) to add a web app
 4. Enter a nickname (e.g., "claudeinsight-web")
 5. Click **"Register app"**
-6. Copy the `firebaseConfig` object and save to a JSON file:
+6. You'll see a code snippet with `firebaseConfig`. You need to save this as JSON.
 
-**Example: `~/Downloads/firebase-web-config.json`**
+**Option A: Use the Config button (Recommended)**
+
+After registering, click the **"Config"** radio button (instead of "npm") to get the raw config object, then save it as JSON.
+
+**Option B: Convert JavaScript to JSON manually**
+
+Firebase shows JavaScript like this:
+```javascript
+const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "your-project.firebaseapp.com",
+  // ...
+};
+```
+
+To convert to JSON:
+- Remove `const firebaseConfig = ` and the trailing `;`
+- Ensure all keys have double quotes (JSON requires `"apiKey"` not `apiKey`)
+
+**Save as: `~/Downloads/firebase-web-config.json`**
 ```json
 {
   "apiKey": "AIza...",
@@ -109,7 +130,7 @@ service cloud.firestore {
 }
 ```
 
-**Note:** This allows all access. For production, implement proper rules.
+> **Security Warning:** The rules above allow anyone with your project ID to read/write data. This is fine for personal use since your project ID is not public. For shared or team use, implement proper authentication rules. See [Firebase Security Rules documentation](https://firebase.google.com/docs/firestore/security/get-started).
 
 ### "Invalid service account" errors
 
