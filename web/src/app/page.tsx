@@ -13,6 +13,8 @@ import { InsightList } from '@/components/insights/InsightList';
 import { ActivityChart } from '@/components/charts/ActivityChart';
 import { InsightTypeChart } from '@/components/charts/InsightTypeChart';
 import { LandingPage } from '@/components/landing/LandingPage';
+import { BulkAnalyzeButton } from '@/components/analysis/BulkAnalyzeButton';
+import { fetchMessages } from '@/lib/hooks/useFirestore';
 import { MessageSquare, Lightbulb, Folder, Clock, Download, X } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -38,6 +40,10 @@ export default function DashboardPage() {
     return acc + (s.endedAt.getTime() - s.startedAt.getTime());
   }, 0);
   const totalHours = Math.round(totalDuration / 3600000);
+
+  // Find sessions without insights
+  const sessionIdsWithInsights = new Set(insights.map(i => i.sessionId));
+  const unanalyzedSessions = sessions.filter(s => !sessionIdsWithInsights.has(s.id));
 
   return (
     <div className="p-6 space-y-6">
@@ -134,6 +140,25 @@ export default function DashboardPage() {
           <InsightTypeChart data={insightsByType} />
         </div>
       </div>
+
+      {/* Quick Actions */}
+      {unanalyzedSessions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">{unanalyzedSessions.length} sessions without insights</p>
+              <p className="text-xs text-muted-foreground">Generate AI insights for unanalyzed sessions</p>
+            </div>
+            <BulkAnalyzeButton
+              sessions={unanalyzedSessions}
+              getMessages={fetchMessages}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Activity */}
       <div className="grid gap-6 lg:grid-cols-2">
