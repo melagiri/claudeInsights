@@ -360,3 +360,35 @@ function generateProjectId(projectPath: string): string {
 function generateInsightId(): string {
   return `insight_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
+
+/**
+ * Analyze multiple sessions in sequence
+ */
+export async function analyzeSessions(
+  sessions: Array<{ session: Session; messages: Message[] }>,
+  onProgress?: (completed: number, total: number) => void
+): Promise<{
+  successful: number;
+  failed: number;
+  errors: string[];
+}> {
+  let successful = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  for (let i = 0; i < sessions.length; i++) {
+    const { session, messages } = sessions[i];
+    const result = await analyzeSession(session, messages);
+
+    if (result.success) {
+      successful++;
+    } else {
+      failed++;
+      errors.push(`${session.generatedTitle || session.id}: ${result.error}`);
+    }
+
+    onProgress?.(i + 1, sessions.length);
+  }
+
+  return { successful, failed, errors };
+}
