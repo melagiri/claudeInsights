@@ -147,23 +147,10 @@ export interface ClaudeInsightConfig {
     clientEmail: string;
     privateKey: string;
   };
-  // Web dashboard Firebase client config
-  webConfig?: {
-    apiKey: string;
-    authDomain: string;
-    storageBucket: string;
-    messagingSenderId: string;
-    appId: string;
-  };
-  gemini?: {
-    apiKey: string;
-  };
   sync: {
     claudeDir: string;
     excludeProjects: string[];
   };
-  // Hosted dashboard URL (can be customized for self-hosting)
-  dashboardUrl?: string;
 }
 
 export interface SyncState {

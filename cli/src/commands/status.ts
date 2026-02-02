@@ -16,7 +16,6 @@ export async function statusCommand(): Promise<void> {
     const config = loadConfig();
     if (config) {
       console.log(chalk.gray(`    Project: ${config.firebase.projectId}`));
-      console.log(chalk.gray(`    Gemini: ${config.gemini ? 'Configured' : 'Not configured'}`));
     }
   } else {
     console.log(chalk.red('  ✗ Not configured'));
