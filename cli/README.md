@@ -1,16 +1,16 @@
-# ClaudeInsight CLI
+# Code Insights CLI
 
-Sync your Claude Code sessions to Firebase for analysis.
+Sync your AI coding sessions to Firebase for analysis.
 
 ## Installation
 
 ```bash
-npm install -g claudeinsight
+npm install -g code-insights
 ```
 
 Or with pnpm:
 ```bash
-pnpm add -g claudeinsight
+pnpm add -g code-insights
 ```
 
 ## Quick Start
@@ -26,7 +26,7 @@ See [Firebase Setup Guide](docs/FIREBASE_SETUP.md) for detailed instructions.
 If you have the Firebase JSON files downloaded:
 
 ```bash
-claudeinsight init --from-json ~/Downloads/serviceAccountKey.json
+code-insights init --from-json ~/Downloads/serviceAccountKey.json
 ```
 
 **Option B: With Web Dashboard Link**
@@ -34,7 +34,7 @@ claudeinsight init --from-json ~/Downloads/serviceAccountKey.json
 Include web config for instant dashboard connection:
 
 ```bash
-claudeinsight init \
+code-insights init \
   --from-json ~/Downloads/serviceAccountKey.json \
   --web-config ~/Downloads/firebase-web-config.json
 ```
@@ -42,24 +42,24 @@ claudeinsight init \
 **Option C: Interactive Setup**
 
 ```bash
-claudeinsight init
+code-insights init
 ```
 
 ### 3. Sync your sessions
 
 ```bash
-claudeinsight sync
+code-insights sync
 ```
 
 ### 4. Connect the Dashboard
 
 ```bash
-claudeinsight link
+code-insights link
 ```
 
 This generates a URL and QR code to auto-configure the web dashboard.
 
-Or visit [claude-insights.vercel.app](https://claude-insights.vercel.app) and configure manually.
+Or visit [code-insights.ai](https://code-insights.ai) and configure manually.
 
 ## Commands
 
@@ -90,7 +90,7 @@ Or visit [claude-insights.vercel.app](https://claude-insights.vercel.app) and co
 
 ## Data Privacy
 
-**Your data, your infrastructure.** All session data is stored in your own Firebase project. The CLI only uploads to Firebase credentials you provide. Nothing is sent to ClaudeInsight servers.
+**Your data, your infrastructure.** All session data is stored in your own Firebase project. The CLI only uploads to Firebase credentials you provide. Nothing is sent to Code Insights servers.
 
 ## Multi-Device Support
 

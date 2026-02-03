@@ -1,6 +1,6 @@
 # Firebase Setup Guide
 
-This guide walks you through setting up Firebase for ClaudeInsight.
+This guide walks you through setting up Firebase for Code Insights.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ This guide walks you through setting up Firebase for ClaudeInsight.
 
 1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Click **"Create a project"** (or **"Add project"**)
-3. Enter a project name (e.g., "claudeinsight-data")
+3. Enter a project name (e.g., "code-insights-data")
 4. Disable Google Analytics (optional, not needed)
 5. Click **"Create project"**
 
@@ -40,7 +40,7 @@ This guide walks you through setting up Firebase for ClaudeInsight.
 1. In Project Settings, go to the **"General"** tab
 2. Scroll down to **"Your apps"**
 3. Click the **Web icon** (`</>`) to add a web app
-4. Enter a nickname (e.g., "claudeinsight-web")
+4. Enter a nickname (e.g., "code-insights-web")
 5. Click **"Register app"**
 6. You'll see a code snippet with `firebaseConfig`. You need to save this as JSON.
 
@@ -75,12 +75,12 @@ To convert to JSON:
 }
 ```
 
-## Step 5: Configure ClaudeInsight CLI
+## Step 5: Configure Code Insights CLI
 
 ### Option A: Quick Setup (Recommended)
 
 ```bash
-claudeinsight init \
+code-insights init \
   --from-json ~/Downloads/serviceAccountKey.json \
   --web-config ~/Downloads/firebase-web-config.json
 ```
@@ -92,7 +92,7 @@ This will:
 ### Option B: Interactive Setup
 
 ```bash
-claudeinsight init
+code-insights init
 ```
 
 Follow the prompts to provide credentials.
@@ -100,7 +100,7 @@ Follow the prompts to provide credentials.
 ## Step 6: Sync Your Sessions
 
 ```bash
-claudeinsight sync
+code-insights sync
 ```
 
 ## Step 7: Open the Dashboard
@@ -108,10 +108,10 @@ claudeinsight sync
 If you configured web config, a dashboard link was shown. Regenerate it anytime:
 
 ```bash
-claudeinsight link
+code-insights link
 ```
 
-Or visit [claude-insights.vercel.app](https://claude-insights.vercel.app) and configure manually.
+Or visit [code-insights.ai](https://code-insights.ai) and configure manually.
 
 ## Troubleshooting
 
