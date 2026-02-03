@@ -11,13 +11,13 @@ import { resetCommand } from './commands/reset.js';
 const program = new Command();
 
 program
-  .name('claudeinsight')
-  .description('Sync Claude Code sessions to your Firebase for analysis')
+  .name('code-insights')
+  .description('Sync your AI coding sessions to Firebase for analysis')
   .version('1.0.0');
 
 program
   .command('init')
-  .description('Configure ClaudeInsight with your Firebase credentials')
+  .description('Configure Code Insights with your Firebase credentials')
   .option('-j, --from-json <path>', 'Path to Firebase service account JSON file')
   .option('-w, --web-config <path>', 'Path to Firebase web SDK config JSON file')
   .action(initCommand);
