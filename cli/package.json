@@ -20,7 +20,16 @@
     "analytics",
     "firestore"
   ],
-  "author": "",
+  "author": "Srikanth Rao M",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melagiri/code-insights.git",
+    "directory": "cli"
+  },
+  "bugs": {
+    "url": "https://github.com/melagiri/code-insights/issues"
+  },
+  "homepage": "https://github.com/melagiri/code-insights/tree/master/cli#readme",
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.4.1",
