@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { saveConfig, getConfigDir, isConfigured } from '../utils/config.js';
 import type { ClaudeInsightConfig } from '../types.js';
 
-const DEFAULT_DASHBOARD_URL = 'https://code-insights.ai';
+const DEFAULT_DASHBOARD_URL = 'https://code-insights.app';
 
 /**
  * Initialize Code Insights configuration

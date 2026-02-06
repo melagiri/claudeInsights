@@ -111,7 +111,7 @@ If you configured web config, a dashboard link was shown. Regenerate it anytime:
 code-insights link
 ```
 
-Or visit [code-insights.ai](https://code-insights.ai) and configure manually.
+Or visit [code-insights.app](https://code-insights.app) and configure manually.
 
 ## Troubleshooting
 

@@ -212,4 +212,4 @@ Only the founder merges PRs.
 - Favor pragmatic solutions — don't over-architect beyond current needs
 - No test framework yet — flag when tests should be added, don't block on it
 - Types are duplicated across repos (not yet unified) — enforce manual alignment
-- Dashboard URL is `https://code-insights.ai`
+- Dashboard URL is `https://code-insights.app`

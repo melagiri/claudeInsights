@@ -143,5 +143,5 @@ export function encodeWebConfigForUrl(config: FirebaseWebConfig): string {
  */
 export function generateDashboardUrl(config: FirebaseWebConfig): string {
   const encodedConfig = encodeWebConfigForUrl(config);
-  return `https://code-insights.ai/?config=${encodedConfig}`;
+  return `https://code-insights.app/?config=${encodedConfig}`;
 }

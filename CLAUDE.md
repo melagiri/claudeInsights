@@ -371,5 +371,5 @@ Key types defined in `/cli/src/types.ts`:
 - No test framework configured yet
 - No ESLint config file in CLI directory (lint script exists but needs config)
 - pnpm is the package manager
-- Dashboard URL: `https://code-insights.ai`
+- Dashboard URL: `https://code-insights.app`
 - CLI binary is `code-insights`

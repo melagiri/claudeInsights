@@ -39,7 +39,7 @@ This roadmap outlines the development phases for Code Insights. Timelines are fl
   - Analytics page with Recharts charts
 
 - [ ] **1.5 Marketing Site**
-  - Landing page at code-insights.ai
+  - Landing page at code-insights.app
   - What it is, how it works, privacy model
   - Quick start guide
   - Link to GitHub repo
