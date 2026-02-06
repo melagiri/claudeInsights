@@ -1,6 +1,6 @@
 # Session Titles & Insight Rendering Improvements
 
-> Design document for ClaudeInsight UX improvements
+> Design document for Code Insights UX improvements
 > Created: 2026-01-21
 
 ---

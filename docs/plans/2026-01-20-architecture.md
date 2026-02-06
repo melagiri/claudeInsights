@@ -1,8 +1,8 @@
-# ClaudeInsight Architecture Design
+# Code Insights Architecture Design
 
 **Date:** 2026-01-20
 **Status:** Draft
-**Author:** ClaudeInsight Team
+**Author:** Code Insights Team
 
 ---
 
@@ -14,7 +14,7 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌──────────────────┐     ┌──────────────────────────────────────────────┐  │
-│  │   Claude Code    │     │            ClaudeInsight CLI                 │  │
+│  │   Claude Code    │     │            Code Insights CLI                 │  │
 │  │                  │     │                                              │  │
 │  │  ~/.claude/      │────▶│  ┌─────────┐  ┌─────────┐  ┌─────────────┐  │  │
 │  │  projects/       │     │  │ Parser  │─▶│ Insight │─▶│  Firestore  │  │  │
@@ -57,7 +57,7 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │                      ClaudeInsight Dashboard                          │  │
+│  │                      Code Insights Dashboard                          │  │
 │  │                                                                       │  │
 │  │   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐  │  │
 │  │   │  Sessions   │  │  Insights   │  │  Analytics  │  │   Export   │  │  │

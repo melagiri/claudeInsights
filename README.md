@@ -72,23 +72,31 @@ That's it! The `open` command launches the hosted dashboard with your Firebase c
     └─────────────────────────────────────┘
 ```
 
+The CLI and web dashboard are developed in separate repositories:
+- **CLI** (this repo) — Open source, MIT licensed
+- **Web Dashboard** ([code-insights-web](https://github.com/melagiri/code-insights-web)) — Closed source, hosted at Vercel
+
 ## Features
 
 ### CLI Commands
 ```bash
-claudeinsight init          # Configure Firebase credentials
-claudeinsight sync          # Sync sessions to Firestore
-claudeinsight sync --force  # Re-sync all sessions
-claudeinsight open          # Open dashboard in browser
-claudeinsight status        # Show sync statistics
-claudeinsight insights      # View recent insights
-claudeinsight reset         # Clear all Firestore data
+claudeinsight init              # Configure Firebase credentials
+claudeinsight sync              # Sync sessions to Firestore
+claudeinsight sync --force      # Re-sync all sessions
+claudeinsight sync --dry-run    # Preview without changes
+claudeinsight open              # Open dashboard in browser
+claudeinsight status            # Show sync statistics
+claudeinsight insights          # View recent insights
+claudeinsight insights --today  # Today's insights only
+claudeinsight install-hook      # Auto-sync on session end
+claudeinsight uninstall-hook    # Remove auto-sync hook
+claudeinsight reset --confirm   # Clear all Firestore data
 ```
 
 ### Web Dashboard
 - **Authentication** - Sign in with Google or GitHub
 - **Real-time views** - Sessions, projects, insights
-- **LLM Analysis** - Generate insights with your own API key
+- **LLM Analysis** - Generate insights with your own API key (OpenAI, Anthropic, Gemini, or Ollama)
 - **Analytics** - Usage patterns and trends
 - **Export** - Markdown (plain, Obsidian, Notion)
 
@@ -111,15 +119,11 @@ Sync from multiple machines to the same Firebase:
 ## Tech Stack
 
 - **CLI**: Node.js, TypeScript, Commander.js, Firebase Admin SDK
-- **Web**: Next.js 16, React 19, Tailwind CSS, shadcn/ui
+- **Web**: Next.js 16, React 19, Tailwind CSS 4, shadcn/ui
 - **Auth**: NextAuth.js (Google, GitHub)
 - **Database**: Vercel Postgres (users), Firebase Firestore (your data)
 - **Analytics**: Vercel Analytics
 - **LLM**: OpenAI, Anthropic, Gemini, Ollama
-
-## Self-Hosting
-
-Want to host your own dashboard? See [web/README.md](/web/README.md) for deployment instructions.
 
 ## Contributing
 

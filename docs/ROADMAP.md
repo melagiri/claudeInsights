@@ -1,75 +1,76 @@
-# ClaudeInsight Roadmap
+# Code Insights Roadmap
 
 ## Overview
 
-This roadmap outlines the development phases for ClaudeInsight. As a hobby project, timelines are flexible—progress happens when time allows.
+This roadmap outlines the development phases for Code Insights. Timelines are flexible—progress is driven by priorities and availability.
 
 ---
 
-## Phase 1: Foundation
+## Phase 1: Foundation ✅
 
 **Goal:** Working end-to-end flow from JSONL to dashboard
 
 ### Milestones
 
-- [ ] **1.1 Project Setup**
-  - Initialize Next.js project with Tailwind + shadcn/ui
-  - Set up Firebase SDK integration
-  - Create configuration system for user's Firebase credentials
-  - Basic project structure and tooling (ESLint, TypeScript)
+- [x] **1.1 Project Setup**
+  - Next.js project with Tailwind + shadcn/ui
+  - Firebase SDK integration (Admin for CLI, Client for web)
+  - Configuration system for user's Firebase credentials
+  - TypeScript strict mode, pnpm workspaces
 
-- [ ] **1.2 JSONL Parser**
+- [x] **1.2 JSONL Parser**
   - Parse Claude Code session files from `~/.claude/projects/`
   - Extract: sessions, messages, tool calls, timestamps
-  - Pattern matching for insights (decisions, learnings, work items)
+  - Smart session title generation (5-tier fallback)
+  - Session character classification (7 types)
   - CLI command: `claudeinsight sync`
 
-- [ ] **1.3 Firestore Schema & Sync**
-  - Design document structure for sessions and insights
-  - Implement upload to user's Firestore
-  - Handle incremental sync (only new/changed sessions)
+- [x] **1.3 Firestore Schema & Sync**
+  - Document structure: projects, sessions, messages, insights
+  - Upload to user's Firestore via Admin SDK
+  - Incremental sync (tracks file modification times)
+  - Multi-device support (git remote-based project IDs)
   - CLI command: `claudeinsight init` (Firebase setup wizard)
 
-- [ ] **1.4 Basic Dashboard**
+- [x] **1.4 Basic Dashboard**
   - Session list view with filters (project, date)
-  - Session detail view (conversation replay)
-  - Simple insights display (extracted patterns)
-  - Local development server
+  - Session detail view with message display
+  - Insights display by type
+  - Analytics page with Recharts charts
 
 - [ ] **1.5 Marketing Site**
-  - Landing page at claudeinsight.com
+  - Landing page at code-insights.ai
   - What it is, how it works, privacy model
   - Quick start guide
   - Link to GitHub repo
-  - Creator credits
 
 ### Deliverables
-- CLI tool that syncs sessions to Firestore
-- Web dashboard showing sessions and basic insights
-- Marketing site live
+- ✅ CLI tool that syncs sessions to Firestore
+- ✅ Web dashboard showing sessions and insights
+- Marketing site (pending)
 
 ---
 
-## Phase 2: Integration
+## Phase 2: Integration ✅
 
 **Goal:** Seamless integration with Claude Code workflow
 
 ### Milestones
 
-- [ ] **2.1 Claude Code Hook**
+- [x] **2.1 Claude Code Hook**
   - Post-session hook that triggers sync automatically
-  - Background processing (no impact on Claude Code performance)
-  - Hook installation command: `claudeinsight install-hook`
+  - Quiet mode for background processing (`sync -q`)
+  - `claudeinsight install-hook` / `claudeinsight uninstall-hook`
 
 - [ ] **2.2 Slash Command**
   - `/insights` - Quick summary of recent sessions
   - `/insights today` - What you worked on today
   - `/insights decisions` - Recent architectural decisions
 
-- [ ] **2.3 Real-time Dashboard**
-  - Firestore real-time listeners
+- [x] **2.3 Real-time Dashboard**
+  - Firestore real-time listeners via `onSnapshot`
   - Live updates as sessions complete
-  - Notification for new insights
+  - Custom React hooks: useProjects, useSessions, useInsights, useAnalytics
 
 - [ ] **2.4 Enhanced Filtering**
   - Full-text search across sessions
@@ -77,32 +78,37 @@ This roadmap outlines the development phases for ClaudeInsight. As a hobby proje
   - Saved filters / bookmarks
 
 ### Deliverables
-- Auto-sync via Claude Code hooks
-- Slash commands for quick insights
-- Real-time dashboard updates
+- ✅ Auto-sync via Claude Code hooks
+- Slash commands (pending)
+- ✅ Real-time dashboard updates
 
 ---
 
-## Phase 3: Intelligence
+## Phase 3: Intelligence ✅
 
-**Goal:** AI-powered deeper insights using Gemini
+**Goal:** LLM-powered deeper insights
 
 ### Milestones
 
-- [ ] **3.1 Gemini Integration**
-  - User configures their own Gemini API key
-  - On-demand insight generation (not automatic, to control costs)
-  - "Enhance this session" button in dashboard
+- [x] **3.1 Multi-Provider LLM Integration**
+  - Pluggable provider system (factory pattern)
+  - OpenAI (gpt-4o, gpt-4o-mini, gpt-4-turbo)
+  - Anthropic (claude-sonnet, claude-haiku, claude-opus)
+  - Google Gemini (gemini-2.0-flash, gemini-1.5-pro/flash)
+  - Ollama for local models (llama3.2, mistral, codellama)
+  - User configures their own API key, stored in localStorage
+  - Token input capped at 80k
 
-- [ ] **3.2 Smart Summaries**
-  - Daily/weekly digest generation
-  - "What did I accomplish?" summaries
-  - Automatic categorization of work types
+- [x] **3.2 Session Analysis**
+  - "Analyze" button on session detail page
+  - Bulk analyze for unanalyzed sessions
+  - Generates 4 insight types: summary, decision, learning, technique
+  - Analysis versioning for re-analysis
 
-- [ ] **3.3 Decision Extraction**
-  - LLM-powered decision identification
-  - Extract: what was decided, why, alternatives considered
-  - Link decisions to code changes
+- [ ] **3.3 Cross-Session Patterns**
+  - Cross-session pattern detection
+  - Project-level and overall-level insights
+  - Recurring pattern identification
 
 - [ ] **3.4 Learning Journal**
   - Auto-generate "lessons learned" from sessions
@@ -110,35 +116,37 @@ This roadmap outlines the development phases for ClaudeInsight. As a hobby proje
   - Suggest areas for improvement
 
 ### Deliverables
-- Gemini-powered insight enhancement
-- Smart summaries and decision extraction
-- Learning journal generation
+- ✅ Multi-provider LLM insight generation
+- ✅ On-demand and bulk session analysis
+- Cross-session patterns (pending)
+- Learning journal (pending)
 
 ---
 
-## Phase 4: Export & Sharing
+## Phase 4: Export & Sharing (Partially Complete)
 
 **Goal:** Get insights out of the dashboard into your workflow
 
 ### Milestones
 
-- [ ] **4.1 Markdown Export**
+- [x] **4.1 Markdown Export**
   - Export by: session, day, week, project
   - Formats: Plain Markdown, Obsidian (with wikilinks), Notion
-  - Customizable templates
+  - Export page in dashboard
 
 - [ ] **4.2 Scheduled Reports**
   - Weekly email digest (optional, user's email service)
   - Export to file system on schedule
+  - Export reminder logic (partially implemented)
 
 - [ ] **4.3 API Access**
   - REST API for programmatic access to insights
   - Webhook support for external integrations
 
 ### Deliverables
-- Multi-format markdown export
-- Scheduled report generation
-- API for custom integrations
+- ✅ Multi-format markdown export
+- Scheduled reports (partially implemented)
+- API for custom integrations (pending)
 
 ---
 
@@ -161,7 +169,7 @@ This roadmap outlines the development phases for ClaudeInsight. As a hobby proje
 - [ ] **5.3 Documentation**
   - Comprehensive setup guide
   - API documentation
-  - Contribution guidelines
+  - Contribution guidelines (done: CONTRIBUTING.md)
 
 ### Deliverables
 - Extensible plugin system
@@ -172,21 +180,21 @@ This roadmap outlines the development phases for ClaudeInsight. As a hobby proje
 
 ## Version Milestones
 
-| Version | Phase | Key Features |
-|---------|-------|--------------|
-| 0.1.0 | 1 | CLI sync, basic dashboard |
-| 0.2.0 | 1 | Marketing site, Firestore integration |
-| 0.3.0 | 2 | Claude Code hook, slash commands |
-| 0.4.0 | 2 | Real-time updates, search |
-| 0.5.0 | 3 | Gemini integration, smart summaries |
-| 0.6.0 | 4 | Markdown export, scheduled reports |
-| 1.0.0 | 5 | Plugin architecture, community features |
+| Version | Phase | Key Features | Status |
+|---------|-------|--------------|--------|
+| 0.1.0 | 1 | CLI sync, basic dashboard | ✅ Done |
+| 0.2.0 | 1 | Firestore integration, smart titles | ✅ Done |
+| 0.3.0 | 2 | Claude Code hook, real-time updates | ✅ Done |
+| 0.4.0 | 3 | Multi-LLM analysis, bulk analyze | ✅ Done |
+| 0.5.0 | 4 | Markdown export | ✅ Done |
+| 0.6.0 | 4 | Scheduled reports, API access | Planned |
+| 1.0.0 | 5 | Plugin architecture, community features | Planned |
 
 ---
 
 ## Contributing
 
-This is an open source hobby project. Contributions welcome!
+This is an open source project. Contributions welcome!
 
 - **Issues**: Bug reports, feature requests
 - **PRs**: Code contributions (please discuss first for large changes)

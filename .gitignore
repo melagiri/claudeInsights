@@ -5,10 +5,6 @@ package-lock.json
 
 # Build outputs
 dist/
-build/
-.next/
-out/
-generated/
 
 # Environment and config files
 .env
@@ -38,11 +34,10 @@ yarn-error.log*
 # Test coverage
 coverage/
 
-# Vercel
-.vercel
-
-# Claude/ClaudeInsight local configs (user-specific)
-.claude/
+# Claude local settings (user-specific)
+.claude/*
+!.claude/agents/
+!.claude/hookify.*.md
 .claudeinsight/
 
 # Git worktrees

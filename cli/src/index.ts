@@ -4,22 +4,21 @@ import { Command } from 'commander';
 import { initCommand } from './commands/init.js';
 import { syncCommand } from './commands/sync.js';
 import { statusCommand } from './commands/status.js';
-import { linkCommand } from './commands/link.js';
 import { installHookCommand, uninstallHookCommand } from './commands/install-hook.js';
+import { insightsCommand } from './commands/insights.js';
 import { resetCommand } from './commands/reset.js';
+import { openCommand } from './commands/open.js';
 
 const program = new Command();
 
 program
-  .name('code-insights')
-  .description('Sync your AI coding sessions to Firebase for analysis')
-  .version('1.0.0');
+  .name('claudeinsight')
+  .description('Sync Claude Code sessions to Firestore for insights')
+  .version('0.1.0');
 
 program
   .command('init')
   .description('Configure Code Insights with your Firebase credentials')
-  .option('-j, --from-json <path>', 'Path to Firebase service account JSON file')
-  .option('-w, --web-config <path>', 'Path to Firebase web SDK config JSON file')
   .action(initCommand);
 
 program
@@ -38,12 +37,6 @@ program
   .action(statusCommand);
 
 program
-  .command('link')
-  .description('Generate a link to connect the web dashboard')
-  .option('--no-qr', 'Skip QR code generation')
-  .action(linkCommand);
-
-program
   .command('install-hook')
   .description('Install Claude Code hook for automatic sync')
   .action(installHookCommand);
@@ -53,6 +46,28 @@ program
   .description('Remove Claude Code hook')
   .action(uninstallHookCommand);
 
+program
+  .command('insights')
+  .description('View recent insights from Firestore')
+  .option('-t, --type <type>', 'Filter by insight type (summary, decision, learning, technique)')
+  .option('-p, --project <name>', 'Filter by project name')
+  .option('--today', 'Show only today\'s insights')
+  .option('-l, --limit <number>', 'Number of insights to show', '20')
+  .action((options) => {
+    insightsCommand({
+      type: options.type,
+      project: options.project,
+      today: options.today,
+      limit: parseInt(options.limit, 10),
+    });
+  });
+
 program.addCommand(resetCommand);
+
+program
+  .command('open')
+  .description('Open the Code Insights dashboard in your browser')
+  .option('--url', 'Print the URL instead of opening browser')
+  .action(openCommand);
 
 program.parse();

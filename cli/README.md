@@ -28,7 +28,7 @@ claudeinsight --version
 
 ### `claudeinsight init`
 
-Configure ClaudeInsight with your Firebase credentials (CLI + Web).
+Configure Code Insights with your Firebase credentials (CLI + Web).
 
 ```bash
 claudeinsight init
@@ -52,7 +52,7 @@ Configuration is stored in `~/.claudeinsight/config.json`.
 
 ### `claudeinsight open`
 
-Open the ClaudeInsight dashboard in your browser.
+Open the Code Insights dashboard in your browser.
 
 ```bash
 # Open dashboard with auto-configured Firebase

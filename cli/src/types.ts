@@ -1,4 +1,4 @@
-// Core types for ClaudeInsight
+// Core types for Code Insights
 
 export interface ClaudeMessage {
   type: 'user' | 'assistant' | 'system';

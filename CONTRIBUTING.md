@@ -32,15 +32,17 @@ npm link
 code-insights/
 ├── cli/              # CLI tool (open source)
 │   ├── src/
-│   │   ├── commands/ # CLI commands (init, sync, status, etc.)
-│   │   ├── parser/   # JSONL parsing and title generation
+│   │   ├── commands/ # CLI commands (init, sync, status, insights, open, reset, install-hook)
+│   │   ├── parser/   # JSONL parsing and session title generation
 │   │   ├── firebase/ # Firestore client operations
 │   │   ├── utils/    # Config and device utilities
-│   │   └── types.ts  # Shared TypeScript types
+│   │   ├── types.ts  # TypeScript type definitions
+│   │   └── index.ts  # CLI entry point
 │   └── dist/         # Compiled output (not committed)
-├── web/              # Web dashboard (Next.js)
 └── docs/             # Product docs, roadmap, architecture
 ```
+
+> **Note:** The web dashboard is developed in a separate closed-source repository (`code-insights-web`). This repo contains the CLI tool only.
 
 ## Development Workflow
 
